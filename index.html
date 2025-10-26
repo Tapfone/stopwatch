@@ -1,150 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Beer Freezer Timer</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: blue;
-    color: white;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopwatch</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configure Tailwind for custom colors and Inter font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-gray-bg': '#1e293b',
+                        'light-gray-text': '#f1f5f9',
+                        'stop-red': '#ef4444',
+                        'start-green': '#22c55e',
+                        'reset-yellow': '#facc15',
+                        'lap-blue': '#3b82f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['SF Mono', 'Roboto Mono', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom styles for mobile feel (9:16 aspect ratio simulation) */
+        body {
+            background-color: #0f172a; /* Deep background color */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  .screen {
-    width: 100%;
-    max-width: 450px;
-    height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-  }
+        .phone-frame {
+            width: 100%;
+            max-width: 400px; /* Width limit for mobile simulation */
+            min-height: 90vh; /* Ensures tall ratio look */
+            background-color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Hide overflow for clean lap list */
+        }
 
-  h1 {
-    text-align: center;
-    margin-top: 10px;
-  }
+        /* The stopwatch-image class is no longer necessary but is kept in style for safety */
+        .stopwatch-image {
+            width: 100%;
+            height: auto;
+            max-height: 200px; /* Constraint image size */
+            object-fit: contain;
+        }
 
-  #timer {
-    font-size: 80px;
-    text-align: center;
-    margin: 40px 0;
-  }
+        .time-display {
+            font-size: 3.5rem; /* Large time font */
+            line-height: 1;
+        }
 
-  .btns {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-  }
+        /* Responsive button sizing */
+        .control-button {
+            transition: transform 0.1s ease-in-out, background-color 0.1s;
+            touch-action: manipulation; /* Improves touch responsiveness */
+            width: 100px; /* Fixed width for better layout on mobile */
+            height: 100px; /* Fixed height for better layout on mobile */
+        }
 
-  button {
-    padding: 12px 22px;
-    font-size: 18px;
-    border: none;
-    cursor: pointer;
-    border-radius: 6px;
-  }
+        .control-button:active {
+            transform: scale(0.95);
+        }
 
-  .start-btn {
-    background: #00c200;
-    color: white;
-  }
-
-  .reset-btn {
-    background: #e00000;
-    color: white;
-  }
-
-  .instructions {
-    font-size: 15px;
-    line-height: 1.45;
-    margin-top: 10px;
-    max-height: 52vh;
-    overflow-y: auto;
-  }
-</style>
+        /* Custom scrollbar for lap list */
+        #lapList::-webkit-scrollbar {
+            width: 8px;
+        }
+        #lapList::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            border-radius: 4px;
+        }
+        #lapList::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+    </style>
 </head>
-<body>
-<div class="screen">
-  <h1>Beer Freezer Timer 🍺❄️</h1>
-  <div id="timer">20:00</div>
+<body class="font-sans">
 
-  <div class="btns">
-    <button class="start-btn" onclick="startTimer()">Start</button>
-    <button class="reset-btn" onclick="resetTimer()">Reset</button>
-  </div>
+    <div class="phone-frame">
 
-  <div class="instructions">
-    <h3>Step-by-Step Instructions for Freezing a Beer Bottle in the Freezer 🍺❄️</h3>
-    <p><b>Step 1: The Mission</b><br>
-    Open your freezer like you're entering a top-secret vault. Whisper: “Operation Ice-Cold Brew begins now.”</p>
+        <!-- 1. Title and Time Display (Consolidated after removing image) -->
+        <div class="p-6 flex flex-col items-center pt-10 pb-4">
+            <h1 class="text-2xl font-bold text-light-gray-text mb-10">Stopwatch</h1>
+            <div id="displayTime" class="time-display text-light-gray-text font-mono font-light tracking-wide">00:00.00</div>
+        </div>
 
-    <p><b>Step 2: Clear Space</b><br>
-    Move aside the frozen pizza, mystery Tupperware, and that bag of peas you never use. Your beer deserves VIP space.</p>
+        <!-- 3. Control Buttons -->
+        <div class="flex justify-center space-x-4 p-6 pt-4">
+            <button id="lapButton" class="control-button bg-lap-blue text-white font-semibold rounded-full shadow-lg">LAP</button>
+            <button id="toggleButton" class="control-button bg-start-green text-white font-semibold rounded-full shadow-lg">START</button>
+            <button id="resetButton" class="control-button bg-reset-yellow text-white font-semibold rounded-full shadow-lg">RESET</button>
+        </div>
 
-    <p><b>Step 3: Place the Beer</b><br>
-    Gently lay your beer in the freezer like it's a newborn. Do NOT toss it.</p>
+        <!-- 4. Lap Times List -->
+        <div class="flex-grow p-6 pt-4 overflow-y-auto" style="min-height: 200px;">
+            <h2 class="text-lg font-semibold text-light-gray-text mb-2 border-b border-gray-600 pb-1">Lap Records</h2>
+            <div id="lapList" class="space-y-1 max-h-full overflow-y-auto">
+                <!-- Lap times will be inserted here -->
+                <p id="noLapsMessage" class="text-gray-400 text-sm italic">No laps recorded yet.</p>
+            </div>
+        </div>
 
-    <p><b>Step 4: Set the Timer</b><br>
-    Press Start. Because if you don’t, you WILL forget and cause a beer slush explosion.</p>
+    </div>
 
-    <p><b>Step 5: Walk Away</b><br>
-    Say: “I am responsible.” (You’re not. But try.)</p>
+    <script>
+        // Global variables for the stopwatch state
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval;
+        let isRunning = false;
+        let lapCount = 0;
+        let lastLapTime = 0; // Stores the time of the previous lap for differential calculation
 
-    <p><b>Step 6: Fight the Urge</b><br>
-    Do NOT check the beer. This isn't a soufflé.</p>
+        // DOM elements
+        const displayTime = document.getElementById('displayTime');
+        const toggleButton = document.getElementById('toggleButton');
+        const resetButton = document.getElementById('resetButton');
+        const lapButton = document.getElementById('lapButton');
+        const lapList = document.getElementById('lapList');
+        const noLapsMessage = document.getElementById('noLapsMessage');
 
-    <p><b>Step 7: Retrieve on Time</b><br>
-    When the timer ends, sprint like it's the Olympics and save that beer.</p>
+        // --- Core Logic ---
 
-    <p><b>Step 8: Celebrate</b><br>
-    Crack open your masterpiece. Achieve Peak Refreshment.</p>
-  </div>
-</div>
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            const milliseconds = String(ms % 1000).padStart(3, '0').slice(0, 2); // Show only two decimal places
 
-<audio id="chime-sound">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg" />
-</audio>
+            return `${minutes}:${seconds}.${milliseconds}`;
+        }
 
-<script>
-  let time = 1200;
-  let countdown;
+        function updateDisplay() {
+            elapsedTime = Date.now() - startTime;
+            displayTime.textContent = formatTime(elapsedTime);
+        }
 
-  function updateDisplay() {
-    let minutes = Math.floor(time / 60);
-    let seconds = time % 60;
-    document.getElementById("timer").textContent =
-      `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  }
+        function start() {
+            if (!isRunning) {
+                // Adjust startTime to account for previously elapsed time
+                startTime = Date.now() - elapsedTime;
+                timerInterval = setInterval(updateDisplay, 10); // Update every 10ms for smooth display
+                isRunning = true;
 
-  function startTimer() {
-    if (countdown) return;
-    countdown = setInterval(() => {
-      time--;
-      updateDisplay();
-      if (time <= 0) {
-        clearInterval(countdown);
-        countdown = null;
-        document.getElementById("chime-sound").play();
-      }
-    }, 1000);
-  }
+                toggleButton.textContent = 'Stop';
+                toggleButton.classList.remove('bg-start-green');
+                toggleButton.classList.add('bg-stop-red');
+                lapButton.disabled = false;
+                resetButton.disabled = false;
+            }
+        }
 
-  function resetTimer() {
-    clearInterval(countdown);
-    countdown = null;
-    time = 1200;
-    updateDisplay();
-  }
-</script>
+        function stop() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                isRunning = false;
+
+                toggleButton.textContent = 'Start';
+                toggleButton.classList.remove('bg-stop-red');
+                toggleButton.classList.add('bg-start-green');
+            }
+        }
+
+        function reset() {
+            stop();
+            elapsedTime = 0;
+            lapCount = 0;
+            lastLapTime = 0;
+            displayTime.textContent = formatTime(0);
+            lapList.innerHTML = '';
+            noLapsMessage.classList.remove('hidden');
+
+            // Reset buttons state
+            toggleButton.textContent = 'Start';
+            toggleButton.classList.remove('bg-stop-red');
+            toggleButton.classList.add('bg-start-green');
+            lapButton.disabled = true;
+            resetButton.disabled = true;
+        }
+
+        function recordLap() {
+            if (isRunning) {
+                lapCount++;
+                const currentLapTime = elapsedTime;
+                const lapDuration = currentLapTime - lastLapTime;
+                lastLapTime = currentLapTime;
+
+                // Hide the "No laps recorded yet" message
+                noLapsMessage.classList.add('hidden');
+
+                // Create the lap list item
+                const lapItem = document.createElement('div');
+                lapItem.className = 'flex justify-between items-center text-light-gray-text text-lg p-2 rounded-lg transition duration-150 ease-in-out hover:bg-gray-700';
+                
+                // Lap number
+                const lapNum = document.createElement('span');
+                lapNum.className = 'font-semibold text-lap-blue w-1/4';
+                lapNum.textContent = `Lap ${lapCount}`;
+                
+                // Total Time
+                const totalTime = document.createElement('span');
+                totalTime.className = 'font-mono text-gray-300 w-1/3 text-right';
+                totalTime.textContent = formatTime(currentLapTime);
+
+                // Lap Duration
+                const duration = document.createElement('span');
+                duration.className = 'font-mono text-start-green font-medium w-1/3 text-right';
+                duration.textContent = formatTime(lapDuration);
+
+                lapItem.appendChild(lapNum);
+                lapItem.appendChild(totalTime);
+                lapItem.appendChild(duration);
+
+                // Insert the new lap at the top of the list
+                if (lapList.firstChild) {
+                    lapList.insertBefore(lapItem, lapList.firstChild);
+                } else {
+                    lapList.appendChild(lapItem);
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+
+        function handleToggle() {
+            if (isRunning) {
+                stop();
+            } else {
+                start();
+            }
+        }
+
+        // Use window.onload to ensure all elements are loaded before attaching listeners
+        window.onload = function() {
+            toggleButton.addEventListener('click', handleToggle);
+            resetButton.addEventListener('click', reset);
+            lapButton.addEventListener('click', recordLap);
+            
+            // Initial state setup
+            resetButton.disabled = true;
+            lapButton.disabled = true;
+        }
+
+    </script>
 </body>
-</html>
+</html
 
