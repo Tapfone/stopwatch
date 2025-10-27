@@ -1,207 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stopwatch</title>
-<style>
-  :root {
-    --orange: #ff6a00;
-    --dark-bg: #2a1f1b;
-    --light-text: #fff;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stopwatch</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at top, #1e1e2f, #0b0b13);
+      --dial-bg: radial-gradient(circle at center, #2b2b3d 0%, #0d0d15 100%);
+      --highlight: #00c6ff;
+      --button-start: #4caf50;
+      --button-stop: #f44336;
+      --button-lap: #2196f3;
+      --button-reset: #ff9800;
+    }
 
-  body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    background: var(--dark-bg);
-    color: var(--light-text);
-    font-family: 'Roboto', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--bg-gradient);
+      font-family: "Poppins", sans-serif;
+      color: white;
+    }
 
-  .container {
-    width: 100%;
-    max-width: 400px;
-    aspect-ratio: 9 / 16;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding-top: 40px;
-  }
+    .container {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 9 / 16;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
 
-  .circle {
-    position: relative;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: conic-gradient(var(--orange) 0deg, #333 0deg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-  }
+    .dial {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      border-radius: 50%;
+      background: var(--dial-bg);
+      box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.1), 0 0 25px rgba(0, 198, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
+    }
 
-  .circle-inner {
-    position: absolute;
-    width: 160px;
-    height: 160px;
-    background: #1b1b1b;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px #000 inset;
-  }
+    .dial::before {
+      content: "";
+      position: absolute;
+      width: 90%;
+      height: 90%;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+    }
 
-  .time {
-    font-size: 2.5rem;
-    font-weight: bold;
-  }
+    .dial .ticks {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
 
-  .buttons {
-    margin-top: 30px;
-    display: flex;
-    gap: 10px;
-  }
+    .tick {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 2px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      transform-origin: center 125px;
+    }
 
-  button {
-    padding: 12px 20px;
-    font-size: 1rem;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    color: white;
-  }
+    .display {
+      font-size: 2.2rem;
+      font-weight: 600;
+      color: var(--highlight);
+      letter-spacing: 1px;
+      z-index: 2;
+    }
 
-  #start { background-color: #28a745; }
-  #stop { background-color: #ff6a00; }
-  #reset { background-color: #dc3545; }
-  #lap { background-color: #007bff; }
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 80%;
+      gap: 12px;
+    }
 
-  button:active {
-    opacity: 0.8;
-    transform: scale(0.98);
-  }
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
 
-  .laps {
-    margin-top: 25px;
-    width: 85%;
-    max-height: 200px;
-    overflow-y: auto;
-    border-top: 1px solid #444;
-    padding-top: 10px;
-  }
+    button:active {
+      transform: scale(0.97);
+    }
 
-  .lap {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.1rem;
-    padding: 6px 0;
-    border-bottom: 1px solid #333;
-  }
+    #start { background-color: var(--button-start); box-shadow: 0 0 10px var(--button-start); }
+    #stop { background-color: var(--button-stop); box-shadow: 0 0 10px var(--button-stop); }
+    #lap { background-color: var(--button-lap); box-shadow: 0 0 10px var(--button-lap); }
+    #reset { background-color: var(--button-reset); box-shadow: 0 0 10px var(--button-reset); }
 
-  .lap-number {
-    color: var(--orange);
-  }
+    .laps {
+      margin-top: 20px;
+      width: 80%;
+      max-height: 150px;
+      overflow-y: auto;
+      text-align: left;
+      font-size: 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 10px;
+    }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
+    .lap {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px 0;
+    }
 
-  ::-webkit-scrollbar-thumb {
-    background: var(--orange);
-    border-radius: 3px;
-  }
-</style>
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
-  <div class="circle" id="progress">
-    <div class="circle-inner">
-      <div class="time" id="display">00:00</div>
+  <div class="container">
+    <div class="dial">
+      <div class="ticks" id="ticks"></div>
+      <div class="display" id="display">00:00.00</div>
     </div>
+    <div class="buttons">
+      <button id="start">Start</button>
+      <button id="stop">Stop</button>
+      <button id="lap">Lap</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="laps" id="laps"></div>
   </div>
 
-  <div class="buttons">
-    <button id="start">START</button>
-    <button id="stop">STOP</button>
-    <button id="lap">LAP</button>
-    <button id="reset">RESET</button>
-  </div>
-
-  <div class="laps" id="lapsList"></div>
-</div>
-
-<script>
-  let startTime, updatedTime, difference = 0;
-  let running = false;
-  let timerInterval;
-  let progress = 0;
-  let lapCount = 0;
-
-  const display = document.getElementById("display");
-  const circle = document.getElementById("progress");
-  const lapsList = document.getElementById("lapsList");
-
-  function updateTime() {
-    updatedTime = new Date().getTime();
-    difference = updatedTime - startTime;
-
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-    display.textContent =
-      (minutes < 10 ? "0" + minutes : minutes) +
-      ":" +
-      (seconds < 10 ? "0" + seconds : seconds);
-
-    progress = (seconds / 60) * 360;
-    circle.style.background = `conic-gradient(var(--orange) ${progress}deg, #333 ${progress}deg)`;
-  }
-
-  document.getElementById("start").addEventListener("click", () => {
-    if (!running) {
-      running = true;
-      startTime = new Date().getTime() - difference;
-      timerInterval = setInterval(updateTime, 1000);
+  <script>
+    // Create tick marks around the dial
+    const ticks = document.getElementById("ticks");
+    for (let i = 0; i < 60; i++) {
+      const tick = document.createElement("div");
+      tick.className = "tick";
+      tick.style.transform = `rotate(${i * 6}deg) translateX(-50%)`;
+      ticks.appendChild(tick);
     }
-  });
 
-  document.getElementById("stop").addEventListener("click", () => {
-    running = false;
-    clearInterval(timerInterval);
-  });
+    let startTime, updatedTime, difference = 0;
+    let tInterval;
+    let running = false;
+    let lapCount = 1;
 
-  document.getElementById("reset").addEventListener("click", () => {
-    running = false;
-    clearInterval(timerInterval);
-    difference = 0;
-    progress = 0;
-    lapCount = 0;
-    display.textContent = "00:00";
-    circle.style.background = `conic-gradient(var(--orange) 0deg, #333 0deg)`;
-    lapsList.innerHTML = "";
-  });
+    const display = document.getElementById("display");
+    const laps = document.getElementById("laps");
 
-  document.getElementById("lap").addEventListener("click", () => {
-    if (running) {
-      lapCount++;
-      const lapTime = display.textContent;
-      const lapElement = document.createElement("div");
-      lapElement.classList.add("lap");
-      lapElement.innerHTML = `<span class="lap-number">Lap ${lapCount}</span><span>${lapTime}</span>`;
-      lapsList.prepend(lapElement);
+    function startTimer() {
+      if (!running) {
+        startTime = new Date().getTime() - difference;
+        tInterval = setInterval(getShowTime, 10);
+        running = true;
+      }
     }
-  });
-</script>
 
+    function stopTimer() {
+      if (running) {
+        clearInterval(tInterval);
+        running = false;
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(tInterval);
+      running = false;
+      difference = 0;
+      display.textContent = "00:00.00";
+      laps.innerHTML = "";
+      lapCount = 1;
+    }
+
+    function lapTimer() {
+      if (running) {
+        const lapTime = display.textContent;
+        const lapElement = document.createElement("div");
+        lapElement.className = "lap";
+        lapElement.textContent = `Lap ${lapCount}: ${lapTime}`;
+        laps.prepend(lapElement);
+        lapCount++;
+      }
+    }
+
+    function getShowTime() {
+      updatedTime = new Date().getTime();
+      difference = updatedTime - startTime;
+
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      const milliseconds = Math.floor((difference % 1000) / 10);
+
+      display.textContent =
+        (minutes < 10 ? "0" : "") + minutes + ":" +
+        (seconds < 10 ? "0" : "") + seconds + "." +
+        (milliseconds < 10 ? "0" : "") + milliseconds;
+    }
+
+    document.getElementById("start").onclick = startTimer;
+    document.getElementById("stop").onclick = stopTimer;
+    document.getElementById("reset").onclick = resetTimer;
+    document.getElementById("lap").onclick = lapTimer;
+  </script>
 </body>
 </html>
