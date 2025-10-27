@@ -1,151 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stopwatch</title>
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: #fff;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stopwatch</title>
+<style>
+  :root {
+    --orange: #ff6a00;
+    --dark-bg: #2a1f1b;
+    --light-text: #fff;
+  }
 
-    .stopwatch {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      text-align: center;
-      width: 320px;
-    }
+  body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    background: var(--dark-bg);
+    color: var(--light-text);
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 
-    h1 {
-      font-size: 3em;
-      margin-bottom: 20px;
-      letter-spacing: 2px;
-    }
+  .container {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 9 / 16;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
 
-    .time {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
+  .circle {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: conic-gradient(var(--orange) 0deg, #333 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  }
 
-    .buttons button {
-      background: #fff;
-      border: none;
-      color: #333;
-      font-size: 1.1em;
-      margin: 6px;
-      padding: 12px 25px;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+  .circle-inner {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    background: #1b1b1b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px #000 inset;
+  }
 
-    .buttons button:hover {
-      transform: scale(1.1);
-    }
+  .time {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
 
-    .start { background: #00e676; }
-    .stop { background: #ff3d00; }
-    .reset { background: #2979ff; }
-    .lap { background: #ffea00; color: #333; }
+  .buttons {
+    margin-top: 30px;
+    display: flex;
+    gap: 10px;
+  }
 
-    .laps {
-      margin-top: 20px;
-      max-height: 150px;
-      overflow-y: auto;
-      text-align: left;
-      font-size: 1.1em;
-      background: rgba(255, 255, 255, 0.15);
-      padding: 10px;
-      border-radius: 10px;
-    }
+  button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+  }
 
-    .lap-item {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 4px 0;
-    }
-  </style>
+  #start { background-color: #28a745; }
+  #stop { background-color: #ff6a00; }
+  #reset { background-color: #dc3545; }
+  #lap { background-color: #007bff; }
+
+  button:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+
+  .laps {
+    margin-top: 25px;
+    width: 85%;
+    max-height: 200px;
+    overflow-y: auto;
+    border-top: 1px solid #444;
+    padding-top: 10px;
+  }
+
+  .lap {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    padding: 6px 0;
+    border-bottom: 1px solid #333;
+  }
+
+  .lap-number {
+    color: var(--orange);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--orange);
+    border-radius: 3px;
+  }
+</style>
 </head>
 <body>
-  <div class="stopwatch">
-    <h1>Stopwatch</h1>
-    <div class="time" id="display">00:00.00</div>
-    <div class="buttons">
-      <button class="start" id="startBtn">Start</button>
-      <button class="stop" id="stopBtn">Stop</button>
-      <button class="lap" id="lapBtn">Lap</button>
-      <button class="reset" id="resetBtn">Reset</button>
+
+<div class="container">
+  <div class="circle" id="progress">
+    <div class="circle-inner">
+      <div class="time" id="display">00:00</div>
     </div>
-    <div class="laps" id="laps"></div>
   </div>
 
-  <script>
-    let startTime, updatedTime, difference = 0, timerInterval;
-    let running = false;
-    let lapCount = 0;
+  <div class="buttons">
+    <button id="start">START</button>
+    <button id="stop">STOP</button>
+    <button id="lap">LAP</button>
+    <button id="reset">RESET</button>
+  </div>
 
-    const display = document.getElementById("display");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const lapBtn = document.getElementById("lapBtn");
-    const laps = document.getElementById("laps");
+  <div class="laps" id="lapsList"></div>
+</div>
 
-    function updateDisplay() {
-      updatedTime = new Date().getTime();
-      difference = updatedTime - startTime;
+<script>
+  let startTime, updatedTime, difference = 0;
+  let running = false;
+  let timerInterval;
+  let progress = 0;
+  let lapCount = 0;
 
-      let minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      let seconds = Math.floor((difference % (1000 * 60)) / 1000);
-      let milliseconds = Math.floor((difference % 1000) / 10);
+  const display = document.getElementById("display");
+  const circle = document.getElementById("progress");
+  const lapsList = document.getElementById("lapsList");
 
-      minutes = (minutes < 10) ? "0" + minutes : minutes;
-      seconds = (seconds < 10) ? "0" + seconds : seconds;
-      milliseconds = (milliseconds < 10) ? "0" + milliseconds : milliseconds;
+  function updateTime() {
+    updatedTime = new Date().getTime();
+    difference = updatedTime - startTime;
 
-      display.innerHTML = `${minutes}:${seconds}.${milliseconds}`;
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+    display.textContent =
+      (minutes < 10 ? "0" + minutes : minutes) +
+      ":" +
+      (seconds < 10 ? "0" + seconds : seconds);
+
+    progress = (seconds / 60) * 360;
+    circle.style.background = `conic-gradient(var(--orange) ${progress}deg, #333 ${progress}deg)`;
+  }
+
+  document.getElementById("start").addEventListener("click", () => {
+    if (!running) {
+      running = true;
+      startTime = new Date().getTime() - difference;
+      timerInterval = setInterval(updateTime, 1000);
     }
+  });
 
-    startBtn.onclick = () => {
-      if (!running) {
-        running = true;
-        startTime = new Date().getTime() - difference;
-        timerInterval = setInterval(updateDisplay, 10);
-      }
-    };
+  document.getElementById("stop").addEventListener("click", () => {
+    running = false;
+    clearInterval(timerInterval);
+  });
 
-    stopBtn.onclick = () => {
-      running = false;
-      clearInterval(timerInterval);
-    };
+  document.getElementById("reset").addEventListener("click", () => {
+    running = false;
+    clearInterval(timerInterval);
+    difference = 0;
+    progress = 0;
+    lapCount = 0;
+    display.textContent = "00:00";
+    circle.style.background = `conic-gradient(var(--orange) 0deg, #333 0deg)`;
+    lapsList.innerHTML = "";
+  });
 
-    resetBtn.onclick = () => {
-      running = false;
-      clearInterval(timerInterval);
-      difference = 0;
-      display.innerHTML = "00:00.00";
-      laps.innerHTML = "";
-      lapCount = 0;
-    };
+  document.getElementById("lap").addEventListener("click", () => {
+    if (running) {
+      lapCount++;
+      const lapTime = display.textContent;
+      const lapElement = document.createElement("div");
+      lapElement.classList.add("lap");
+      lapElement.innerHTML = `<span class="lap-number">Lap ${lapCount}</span><span>${lapTime}</span>`;
+      lapsList.prepend(lapElement);
+    }
+  });
+</script>
 
-    lapBtn.onclick = () => {
-      if (running) {
-        lapCount++;
-        const lapTime = display.textContent;
-        const lapElement = document.createElement("div");
-        lapElement.classList.add("lap-item");
-        lapElement.textContent = `Lap ${lapCount}: ${lapTime}`;
-        laps.prepend(lapElement);
-      }
-    };
-  </script>
 </body>
 </html>
